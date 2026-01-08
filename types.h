@@ -26,3 +26,8 @@ typedef struct {
     vec3 p4;
     size_t i;
 } quad;
+
+typedef struct {
+    tri t;
+    float depth;
+} td;

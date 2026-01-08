@@ -224,19 +224,19 @@ void dsortQuad(quad* d, size_t l) {
     // NOLINTEND(bugprone-sizeof-expression)
 }*/
 
-void hd(tri* d, size_t n, size_t i) {
+void hd(td* d, size_t n, size_t i) {
     size_t mx = i;
     size_t left = 2 * i + 1;
     size_t right = 2 * i + 2;
 
-    if (left < n && avgdepthTri(&d[left]) > avgdepthTri(&d[mx]))
+    if (left < n && d[left].depth > d[mx].depth)
         mx = left;
 
-    if (right < n && avgdepthTri(&d[right]) > avgdepthTri(&d[mx]))
+    if (right < n && d[right].depth > d[mx].depth)
         mx = right;
 
     if (mx != i) {
-        tri tmp = d[i];
+        td tmp = d[i];
         d[i] = d[mx];
         d[mx] = tmp;
 
@@ -246,24 +246,36 @@ void hd(tri* d, size_t n, size_t i) {
 
 void dsortTri(tri* d, size_t l) {
     if (l < 2) return;
-    
+   
+    td* triDepths = malloc(l*sizeof(td));
+
+    for (size_t i = 0; i < l; i++) {
+        triDepths[i].t = d[i];
+        triDepths[i].depth = avgdepthTri(&d[i]);
+    }
+
     for (size_t i = l / 2; i > 0; i--) {
-        hd(d, l, i - 1);
+        hd(triDepths, l, i - 1);
     }
     
     for (size_t i = l - 1; i > 0; i--) {
-        tri tmp = d[0];
-        d[0] = d[i];
-        d[i] = tmp;
+        td tmp = triDepths[0];
+        triDepths[0] = triDepths[i];
+        triDepths[i] = tmp;
 
-        hd(d, i, 0);
+        hd(triDepths, i, 0);
     }
 
     for (size_t i = 0; i < l / 2; i++) {
-        tri tmp = d[i];
-        d[i] = d[l - 1 - i];
-        d[l - 1 - i] = tmp;
+        td tmp = triDepths[i];
+        triDepths[i] = triDepths[l - 1 - i];
+        triDepths[l - 1 - i] = tmp;
     }
+
+    for (size_t i = 0; i < l; i++) {
+        d[i] = triDepths[i].t;
+    }
+    free(triDepths);
 }
 
 void modelQuad() {
